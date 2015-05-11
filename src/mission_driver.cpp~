@@ -1,0 +1,10 @@
+
+
+//GET: current time step t, delta_t(constant say 0.1 sec), v, delta_omega -> tailored_teleop
+//NOTICE: one of [delta_t, v] [delta_theta] has to be 0
+
+//system(rosrun pars_ros tailored_teleop delta_t, v, theta);
+
+//system(rostopic echo amcl_pose) and redirect to a file
+
+//parse the file, extract the two variables pose and variance.
