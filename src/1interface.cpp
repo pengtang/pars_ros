@@ -2,10 +2,12 @@
 #include <fstream>
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 // argument: StartTimeStep, delta_t, v, s, delta_omega
 // For simplicity, right now the dropoff speed is not considered, namely the speed is locked as a constant
 int current_time_step;
+geometry_msgs::PoseWithCovarianceStamped amcl_pose;
 std::ofstream file;
 void speedMessageReceived(const geometry_msgs::Twist &msg)
 {
@@ -15,13 +17,20 @@ void speedMessageReceived(const geometry_msgs::Twist &msg)
     //ROS_INFO_STREAM("The speed is "<< );
 }
 
+void amclMessageReceived(const geometry_msgs::PoseWithCovarianceStamped &msg)
+{
+  amcl_pose = msg;
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "go_three_second");
   ros::NodeHandle nh;
   
-  ros::Subscriber speed = nh.subscribe("RosAria/cmd_vel", 1, &speedMessageReceived) ;
-  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("RosAria/cmd_vel", 1);
+  ros::Subscriber speed = nh.subscribe("robot0/cmd_vel", 1, &speedMessageReceived) ;
+  ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("robot0/cmd_vel", 1);
+  ros::Subscriber amcl_listener = nh.subscribe("amcl_pose", 1, &amclMessageReceived);
+
   geometry_msgs::Twist msg;
 
   int StartTimeStep = atoi(argv[1]);
@@ -73,7 +82,7 @@ int main(int argc, char **argv)
       pub.publish(msg);
   }
     ROS_INFO_STREAM("The robot finished moving forward three seconds!");
-    
+  
     // Guard, make sure the robot stops.
   rate.sleep();
   msg.linear.x = 0;
@@ -84,4 +93,5 @@ int main(int argc, char **argv)
   msg.angular.z = 0;
   pub.publish(msg); 
 
+  std::cout<<amcl_pose<<std::endl;
 }
