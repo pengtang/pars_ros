@@ -103,14 +103,14 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(1interface src/1interface.cpp)
+add_executable(amcl src/amcl.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(turtle_test_node turtle_test_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(1interface 
+target_link_libraries(amcl 
    ${catkin_LIBRARIES}
 )
 

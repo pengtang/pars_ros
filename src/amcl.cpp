@@ -4,11 +4,21 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include "amcl.h"
+
 // argument: StartTimeStep, delta_t, v, s, delta_omega
 // For simplicity, right now the dropoff speed is not considered, namely the speed is locked as a constant
 int current_time_step;
+
+// amcl_pose is declared as a extern variable in "amcl.h"
 geometry_msgs::PoseWithCovarianceStamped amcl_pose;
 std::ofstream file;
+
 void speedMessageReceived(const geometry_msgs::Twist &msg)
 {
     file<<"Current time step is "<<current_time_step<<std::endl
@@ -47,7 +57,7 @@ int main(int argc, char **argv)
   int total_steps = v==0 ?  abs(spin_angle/delta_omega) : s/v;
 
   //std::cout<<spin_angle<<"  "<<delta_omega<<"  "<<abs(spin_angle/delta_omega)<<std::endl;
-  std::cout<<"s/v = "<<s/v<< "   abs(spin_angle/delta_omega) = "<< abs(spin_angle/delta_omega)<<std::endl;
+  std::cout<<"v is "<<v<<"s/v = "<<s/v<< "   abs(spin_angle/delta_omega) = "<< abs(spin_angle/delta_omega)<<std::endl;
   std::cout<<"Total steps is "<<total_steps<<std::endl;
   //std::cout<<StartTimeStep<<"  "<<delta_t<<"  "<<v<<"  "<<s<<"  "<<delta_omega<<std::endl;
   double BASE_LINEAR_SPEED = v, BASE_ANGULAR_SPEED = delta_omega, CLOCK_SPEED = delta_t;
@@ -93,5 +103,29 @@ int main(int argc, char **argv)
   msg.angular.z = 0;
   pub.publish(msg); 
 
-  std::cout<<amcl_pose<<std::endl;
+  int fd;
+  char * myfifo = "/tmp/myfifo";
+
+  /* create the FIFO (named pipe) */
+  mkfifo(myfifo, 0666);
+
+  /* write "Hi" to the FIFO */
+  fd = open(myfifo, O_WRONLY);
+  ROS_INFO_STREAM("The pipe has been created!");
+  //std::cout<<"The pipe has been created"<<std::endl;
+  ROS_INFO_STREAM("The value written is "<<amcl_pose.pose.pose.position.x);
+  write(fd, (char *) &amcl_pose.pose.pose.position.x, sizeof(double));
+  write(fd, (char *) &amcl_pose.pose.pose.position.y, sizeof(double));
+
+  write(fd, (char *) &amcl_pose.pose.pose.orientation.w, sizeof(double));
+
+  for (int i=0; i<36; i++)
+    write(fd, (char *) &amcl_pose.pose.covariance[i], sizeof(double));
+
+  close(fd);
+
+  /* remove the FIFO */
+  unlink(myfifo);
+//  std::cout<<amcl_pose<<std::endl;
+
 }
