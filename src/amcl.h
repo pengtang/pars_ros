@@ -30,6 +30,7 @@ public:
 	std::string amcl_map; // absolute directory
 
 	// constructor, initialize the amcl
+	// CURRENTLY NOT WORKING, NEEDS TO BOOT MANUALLY
 	AMCL(std::string amcl_map)
 	{
 		system("roscore");
@@ -86,7 +87,7 @@ public:
 	    int fd;
 	    char * myfifo = "/tmp/myfifo";
 	    //char buf[MAX_BUF];
-	    double x, y, orientation;
+	    double x, y, orientation_cos, orientation_sin;
 	    double covariance[36];
 	    /* open, read, and display the message from the FIFO */
 	    fd = open(myfifo, O_RDONLY);
@@ -96,12 +97,13 @@ public:
 		    //read(fd, buf, MAX_BUF);
 		    read(fd, &x, sizeof(double));
 		    read(fd, &y, sizeof(double));
-		    read(fd, &orientation, sizeof(double));
+		    read(fd, &orientation_cos, sizeof(double));
+		    read(fd, &orientation_sin, sizeof(double));
 
 		    for (int i=0; i<36; i++)
 		    	read(fd, &covariance[i], sizeof(double));
 
-		    std::cout<<x<<"  "<<y<<"  "<<orientation<<std::endl;
+		    std::cout<<x<<"  "<<y<<"  "<<orientation_cos<< "  " << orientation_sin <<std::endl;
 		    for (int i = 0;i<36;i++)
 		    	std::cout<<covariance[i]<<"  ";
 		    printf("\n");

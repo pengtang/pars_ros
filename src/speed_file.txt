@@ -1,3 +1,0 @@
-Current time step is 1
-Current linear speed is 1
-Current angular speed is 0
