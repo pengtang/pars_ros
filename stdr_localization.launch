@@ -1,0 +1,15 @@
+<launch>
+	<!-- Run the map server with the desired map -->
+	<!-- node name="map_server" pkg="map_server" type="map_server" args="/home/pengtang/catkin_ws/src/stdr_simulator/stdr_resources/maps/map.yaml"/ -->
+
+	<node pkg = "amcl" type = "amcl" name = "amcl" args="scan:=robot0/laser_0">
+		<param name="initial_pose_x" value="2.0"/>
+		<param name="initial_pose_y" value="2.0"/>
+		<param name="initial_pose_a" value="0"/>
+		<param name="initial_cov_xx" value="0.25"/>
+		<param name="initial_cov_yy" value="0.25"/>
+		<param name="initial_cov_aa" value="0.06853891945"/>
+		<param name="update_min_d" value="0.02"/>
+		<param name="update_min_a" value="0.02"/>
+	</node>
+</launch>

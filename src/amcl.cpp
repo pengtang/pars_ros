@@ -13,20 +13,21 @@
 
 #include "amcl.h"
 
+// Input argument(first two are not supported for user to modify through input argument, with default value here)
+//                         : <delta_t>, <v>, s(travel_distance), spin_angle
 
-// argument: StartTimeStep, delta_t, v, s, delta_omega
-// For simplicity, right now the dropoff speed is not considered, namely the speed is locked as a constant
-int current_time_step;
 int amcl_msg_count = 0;
 double distance_traveled = 99999999;
 double angle_spinned = 99999999;
-double EPISILON_DISTANCE = 0.1;
-double EPISILON_ANGLE = 0.1;
+double EPISILON_DISTANCE = 0.03;
+double EPISILON_ANGLE = 0.03;
 double travel_distance;
 
 // amcl_pose is declared as a extern variable in "amcl.h"
 geometry_msgs::PoseWithCovarianceStamped amcl_pose, amcl_initial;
-std::ofstream file;
+
+// file for debugging
+//std::ofstream file;
 
 void speedMessageReceived(const geometry_msgs::Twist &msg)
 {
@@ -46,6 +47,7 @@ void amclMessageReceived(const geometry_msgs::PoseWithCovarianceStamped &msg)
     }
     else
     {
+      // Angle spinned calculation is incorrect...
       angle_spinned = std::abs(msg.pose.pose.orientation.z - amcl_initial.pose.pose.orientation.z);
 
       distance_traveled = sqrt( pow((msg.pose.pose.position.x - amcl_initial.pose.pose.position.x),2) +
@@ -56,12 +58,11 @@ void amclMessageReceived(const geometry_msgs::PoseWithCovarianceStamped &msg)
     // "msg is "<<msg<<std::endl<<"distance_traveled is "<<distance_traveled<<std::endl<<
     // "distane remaining/past is "<<abs(distance_traveled - travel_distance)<<std::endl;
 
-    // file<<"current orientation is "<<msg.pose.pose.orientation.z<< std::endl<<
-    // "current orientation (x) is "<<msg.pose.pose.orientation.x<<std::endl<<
-    // "current orientation (y) is "<<msg.pose.pose.orientation.y<<std::endl<<
+    // file<<"current orientation is(z) "<<msg.pose.pose.orientation.z<< std::endl<<
     // "current orientation (w) is "<<msg.pose.pose.orientation.w<<std::endl<<
-    // "initial orientation is " << amcl_initial.pose.pose.orientation.z<< std::endl<< std::endl;
-
+    // "initial orientation is(z) " << amcl_initial.pose.pose.orientation.z<< std::endl <<
+    // "initial orientation is(w) " << amcl_initial.pose.pose.orientation.w<< std::endl << std::endl;
+    
     // file<<"distance_traveled is "<<distance_traveled<<std::endl<<
     // "distance needs to travel is "<<travel_distance<<std::endl<<
     // "distane remaining/past is "<<distance_traveled - travel_distance<<std::endl<<
@@ -79,13 +80,16 @@ int main(int argc, char **argv)
 
   geometry_msgs::Twist msg;
 
-  int StartTimeStep = atoi(argv[1]);
-  double delta_t = atof(argv[2]);
-  double v = atof(argv[3]);
-  double s = atof(argv[4]);
+//  double delta_t = atof(argv[1]); //DOES NOT APPLY FOR NOW
+//  double v = atof(argv[2]); // DOES NOT APPLY FOR NOW, PLEASE MAKE THIS RELATIVELY SMALL COMPARED TO s
+
+  // Set parameters
+  double v = 0.2;
+  double s = atof(argv[1]);
   travel_distance = s;
-  double delta_omega = atof(argv[5]);
-  double spin_angle = atof(argv[6]);
+ // double delta_omega = atof(argv[3]);
+  double delta_omega = 0.17;
+  double spin_angle = atof(argv[2]);
 
   if (v == 0 && spin_angle == 0)
     ROS_DEBUG_STREAM("Input is incorrect, it's not moving forward or spinning");
@@ -99,13 +103,15 @@ int main(int argc, char **argv)
   //std::cout<<StartTimeStep<<"  "<<delta_t<<"  "<<v<<"  "<<s<<"  "<<delta_omega<<std::endl;
   double BASE_LINEAR_SPEED = v, BASE_ANGULAR_SPEED = delta_omega;
   int count = 0;
+
+//  file.open("speed_file.txt"); // for debug purpose
+
+  bool movement_forward = s==0 ? false : true;
+  bool movement_spin = not movement_forward;
+
   double CLOCK_SPEED = 0.2;
   ros::Rate rate(1/CLOCK_SPEED);
 
-  file.open("speed_file.txt");
-
-  bool movement_forward = v==0 ? false : true;
-  bool movement_spin = not movement_forward;
 
   if (movement_spin)
     while(ros::ok() && count<int(spin_angle/BASE_ANGULAR_SPEED/CLOCK_SPEED) + 1)
@@ -118,23 +124,21 @@ int main(int argc, char **argv)
         count++;
         ros::spinOnce();
         rate.sleep();
-    }    
+    }
   else if (movement_forward)
-    while(ros::ok() && std::abs(distance_traveled - s) > EPISILON_DISTANCE )
+    while(ros::ok() && std::abs(distance_traveled - s)>EPISILON_DISTANCE )
     {
-        current_time_step = StartTimeStep + count;
         msg.linear.x = BASE_LINEAR_SPEED;
         pub.publish(msg);
         ROS_INFO_STREAM("The robot is now moving forward!");
+        std::cout<<"distance to goal is "<< std::abs(distance_traveled - s) << std::endl;
         //system("rostopic ecsho...");
-        count++;
+        //count++;
         ros::spinOnce();
         rate.sleep();
     }
 
-
-
-  file.close();
+//  file.close(); //for debug purpose
 
   // make the robot stop
   
@@ -160,6 +164,8 @@ int main(int argc, char **argv)
   msg.angular.z = 0;
   pub.publish(msg); 
 
+
+  // Write the answer to pipe
   int fd;
   char * myfifo = "/tmp/myfifo";
 

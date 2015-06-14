@@ -42,20 +42,19 @@ public:
 	}
 
 	AMCL(){}
-	// Return void or PoseWithCovarianceStamped? and HOW?
-	// int StartTimeStep = atoi(argv[1]);
-	// double delta_t = atof(argv[2]);
-	// double v = atof(argv[3]);
-	// double s = atof(argv[4]);
-	// double delta_omega = atof(argv[5]);
-	// double spin_angle = atof(argv[6]);
-	void AMCL_run(int StartTimeStep, double delta_t, double v, double s, double delta_omega, double spin_angle)
+	// double v = 0.2;
+	// double delta_omega = 0.17;
+	// double s = atof(argv[1]);
+	// double spin_angle = atof(argv[2]);
+	void AMCL_run(double s, double spin_angle)
 	{
-		std::string temp_str = "rosrun pars_ros amcl " + to_string(StartTimeStep) + ' '
-		 + to_string(delta_t) + ' ' + to_string(v) + ' ' + to_string(s) + ' '
-		 + to_string(delta_omega) + ' ' + to_string(spin_angle);
+		std::string temp_str = "rosrun pars_ros amcl " + to_string(s) + ' ' +  to_string(spin_angle);
 
 		int total_steps, status;
+		double v = 0.2;
+		double delta_omega = 0.17;
+		double delta_t = 1;
+
 		pid_t pid = fork();
 
 		if (pid > 0)
@@ -63,7 +62,7 @@ public:
 			// parent process, print
 			// wait child process end first 
 			//std::cout<<"v is "<< v << std::endl;
-			total_steps = v==0 ?  abs(spin_angle/delta_omega) : s/v;
+			total_steps = s==0 ?  abs(spin_angle/delta_omega) : s/v;
 			//std::cout<< "Delta_t is  "<< delta_t << "  Total step is "<< total_steps<< std::endl;
 			//std::cout<< "Total sleep time is "<< delta_t * total_steps<< std::endl;		
 			std::cout<<"About to sleep "<<std::endl;
