@@ -33,12 +33,54 @@ public:
 	// CURRENTLY NOT WORKING, NEEDS TO BOOT MANUALLY
 	AMCL(std::string amcl_map)
 	{
-		system("roscore");
-		std::string temp_str = "rosrun map_server map_server ";
-		temp_str += amcl_map;
-		system(temp_str.c_str());
-		system("roslaunch stdr_server stdr.launch");
-		system("roslaunch stdr_server stdr_localization.launch");
+		pid_t pid1 = fork();
+		if (pid1 == 0)
+			system("roscore");
+		else if (pid1 > 0)
+		{
+			usleep(5000000);
+			pid_t pid2 = fork();
+			if (pid2 == 0)
+			{
+				std::string temp_str = "rosrun map_server map_server ";
+				temp_str += amcl_map;
+				system(temp_str.c_str());
+			}
+			else if (pid2 > 0)
+			{
+				usleep(5000000);
+				pid_t pid3 = fork();
+				if (pid3 == 0)
+					system("roslaunch stdr_server stdr.launch");
+				else if (pid3 > 0)
+				{
+					usleep(5000000);
+					pid_t pid4 = fork();
+					if (pid4 == 0)
+						system("roslaunch stdr_server stdr_localization.launch");
+					else if (pid4 > 0)
+					{
+						usleep(5000000);
+						return;
+					}
+					else
+						std::cerr<<"pid4 fork error"<<std::endl;
+				}
+				else
+				{
+					std::cerr<<"pid3 fork error"<<std::endl;
+				}
+			}
+			else
+			{
+				std::cerr<<"pid2 fork error"<<std::endl;
+			}
+		}
+		else
+		{
+			std::cerr<<"pid1 fork error"<<std::endl;
+		}
+		
 	}
 
 	AMCL(){}

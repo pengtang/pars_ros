@@ -4,8 +4,8 @@
 geometry_msgs::PoseWithCovarianceStamped amcl_pose;
 int main()
 {
-//	AMCL a("/home/pengtang/catkin_ws/src/stdr_simulator/stdr_resources/maps/map.yaml");
-	AMCL a;
+	AMCL a("/home/pengtang/catkin_ws/src/stdr_simulator/stdr_resources/maps/map.yaml");
+//	AMCL a;
 
 	// double v = 0.2;
 	// double s = atof(argv[1]);
