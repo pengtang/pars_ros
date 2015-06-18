@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -88,8 +89,10 @@ public:
 	// double delta_omega = 0.17;
 	// double s = atof(argv[1]);
 	// double spin_angle = atof(argv[2]);
-	void AMCL_run(double s, double spin_angle)
+	std::vector<double> AMCL_run(double s, double spin_angle)
 	{
+		std::vector<double> amcl_encode;
+
 		std::string temp_str = "rosrun pars_ros amcl " + to_string(s) + ' ' +  to_string(spin_angle);
 
 		int total_steps, status;
@@ -111,7 +114,8 @@ public:
 			usleep(int(1000000 * delta_t * total_steps) + 1000000);
 			std::cout<<"Sleep finished"<<std::endl;
 			//waitpid(pid, &status, 0);
-			AMCL_print();
+			amcl_encode =  AMCL_print();
+			return amcl_encode;
 		}
 		else if (pid == 0)
 		{
@@ -123,13 +127,14 @@ public:
 		else
 			std::cerr<<"Fail to fork new process"<<std::endl;
 	}
-	void AMCL_print()
+	std::vector<double> AMCL_print()
 	{
 	    int fd;
 	    char * myfifo = "/tmp/myfifo";
 	    //char buf[MAX_BUF];
 	    double x, y, orientation_cos, orientation_sin;
 	    double covariance[36];
+	    std::vector<double> amcl_encapsulate;
 	    /* open, read, and display the message from the FIFO */
 	    fd = open(myfifo, O_RDONLY);
 	    //std::cout<<"File open is called!"<<std::endl;
@@ -144,11 +149,21 @@ public:
 		    for (int i=0; i<36; i++)
 		    	read(fd, &covariance[i], sizeof(double));
 
-		    std::cout<<x<<"  "<<y<<"  "<<orientation_cos<< "  " << orientation_sin <<std::endl;
-		    for (int i = 0;i<36;i++)
-		    	std::cout<<covariance[i]<<"  ";
-		    printf("\n");
 		    close(fd);
+		    // std::cout<<x<<"  "<<y<<"  "<<orientation_cos<< "  " << orientation_sin <<std::endl;
+		    // for (int i = 0;i<36;i++)
+		    // 	std::cout<<covariance[i]<<"  ";
+		    // printf("\n");
+		    amcl_encapsulate.push_back(x);
+		    amcl_encapsulate.push_back(y);
+		    amcl_encapsulate.push_back(orientation_cos);
+		    amcl_encapsulate.push_back(orientation_sin);
+		    amcl_encapsulate.push_back(covariance[0]);//xx
+		    amcl_encapsulate.push_back(covariance[1]);//xy
+		    amcl_encapsulate.push_back(covariance[6]);//yx
+		    amcl_encapsulate.push_back(covariance[7]);//yy
+		    
+		    return amcl_encapsulate;
 		}
 		else // If the pipe does not exist
 		{
