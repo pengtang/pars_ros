@@ -96,7 +96,7 @@ public:
 		std::string temp_str = "rosrun pars_ros amcl " + to_string(s) + ' ' +  to_string(spin_angle);
 
 		int total_steps, status;
-		double v = 0.2;
+		double v = 0.1;
 		double delta_omega = 0.17;
 		double delta_t = 1;
 
@@ -111,7 +111,7 @@ public:
 			//std::cout<< "Delta_t is  "<< delta_t << "  Total step is "<< total_steps<< std::endl;
 			//std::cout<< "Total sleep time is "<< delta_t * total_steps<< std::endl;		
 			std::cout<<"About to sleep "<<std::endl;
-			usleep(int(1000000 * delta_t * total_steps) + 1000000);
+			usleep(int(1000000 * delta_t * total_steps) + 1500000);
 			std::cout<<"Sleep finished"<<std::endl;
 			//waitpid(pid, &status, 0);
 			amcl_encode =  AMCL_print();

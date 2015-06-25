@@ -19,7 +19,7 @@
 int amcl_msg_count = 0;
 double distance_traveled = 99999999;
 double angle_spinned = 99999999;
-double EPISILON_DISTANCE = 0.03;
+double EPISILON_DISTANCE = 0.05;
 double EPISILON_ANGLE = 0.03;
 double travel_distance;
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 //  double v = atof(argv[2]); // DOES NOT APPLY FOR NOW, PLEASE MAKE THIS RELATIVELY SMALL COMPARED TO s
 
   // Set parameters
-  double v = 0.2;
+  double v = 0.1;
   double s = atof(argv[1]);
   travel_distance = s;
  // double delta_omega = atof(argv[3]);
