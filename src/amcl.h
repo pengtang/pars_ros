@@ -111,7 +111,7 @@ public:
 			//std::cout<< "Delta_t is  "<< delta_t << "  Total step is "<< total_steps<< std::endl;
 			//std::cout<< "Total sleep time is "<< delta_t * total_steps<< std::endl;		
 			std::cout<<"About to sleep "<<std::endl;
-			usleep(int(1000000 * delta_t * total_steps) + 1500000);
+			usleep(int(1000000 * delta_t * total_steps) + 2500000);
 			std::cout<<"Sleep finished"<<std::endl;
 			//waitpid(pid, &status, 0);
 			amcl_encode =  AMCL_print();
@@ -163,12 +163,24 @@ public:
 		    amcl_encapsulate.push_back(covariance[6]);//yx
 		    amcl_encapsulate.push_back(covariance[7]);//yy
 		    
+		    std::cerr<<"variance for xy is "<< covariance[1]<< "  "<< covariance[6]<<std::endl;
+
 		    return amcl_encapsulate;
 		}
 		else // If the pipe does not exist
 		{
 			//std::cout<<"Pipe does not exist"<<std::endl;
-			std::cerr<<"Pipe does not exist"<<std::endl;
+			std::cerr<<"Pipe does not exist, use the latest amcl data"<<std::endl;
+			// Use the latest amcl data
+			amcl_encapsulate.push_back(amcl_pose.pose.pose.position.x);
+			amcl_encapsulate.push_back(amcl_pose.pose.pose.position.y);
+			amcl_encapsulate.push_back(amcl_pose.pose.pose.orientation.w);
+			amcl_encapsulate.push_back(amcl_pose.pose.pose.orientation.z);
+			amcl_encapsulate.push_back(amcl_pose.pose.covariance[0]);
+			amcl_encapsulate.push_back(amcl_pose.pose.covariance[1]);
+			amcl_encapsulate.push_back(amcl_pose.pose.covariance[6]);
+			amcl_encapsulate.push_back(amcl_pose.pose.covariance[7]);		
+			return amcl_encapsulate;	
 		}
 
 	}

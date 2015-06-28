@@ -19,7 +19,7 @@
 int amcl_msg_count = 0;
 double distance_traveled = 99999999;
 double angle_spinned = 99999999;
-double EPISILON_DISTANCE = 0.05;
+double EPISILON_DISTANCE = 0.08;
 double EPISILON_ANGLE = 0.03;
 double travel_distance;
 
