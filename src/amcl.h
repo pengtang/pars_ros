@@ -96,7 +96,7 @@ public:
 		std::string temp_str = "rosrun pars_ros amcl " + to_string(s) + ' ' +  to_string(spin_angle);
 
 		int total_steps, status;
-		double v = 0.1;
+		double v = 0.05;
 		double delta_omega = 0.17;
 		double delta_t = 1;
 
@@ -109,9 +109,10 @@ public:
 			//std::cout<<"v is "<< v << std::endl;
 			total_steps = s==0 ?  abs(spin_angle/delta_omega) : s/v;
 			//std::cout<< "Delta_t is  "<< delta_t << "  Total step is "<< total_steps<< std::endl;
-			//std::cout<< "Total sleep time is "<< delta_t * total_steps<< std::endl;		
+			//std::cout<< "Total sleep time is "<< delta_t * total_steps<< std::endl;
+			std::cerr<<"parent thread, s:"<< s << ", angle:" << spin_angle << std::endl;	
 			std::cout<<"About to sleep "<<std::endl;
-			usleep(int(1000000 * delta_t * total_steps) + 2500000);
+			usleep(int(1000000 * delta_t * total_steps) + 1000000);
 			std::cout<<"Sleep finished"<<std::endl;
 			//waitpid(pid, &status, 0);
 			amcl_encode =  AMCL_print();
@@ -120,7 +121,7 @@ public:
 		else if (pid == 0)
 		{
 			// child process, call execution function
-			
+			std::cerr<<"child thread, s:"<< s << ", angle:" << spin_angle << std::endl;
     		system(temp_str.c_str());
     		exit(0); // end the copy of fork on this side
 		}
@@ -150,6 +151,8 @@ public:
 		    	read(fd, &covariance[i], sizeof(double));
 
 		    close(fd);
+		    std::cout<<"(x, y): (" << x <<", "<< y <<")"<<std::endl;
+		    std::cerr<<"(x, y): (" << x <<", "<< y <<")"<<std::endl;
 		    // std::cout<<x<<"  "<<y<<"  "<<orientation_cos<< "  " << orientation_sin <<std::endl;
 		    // for (int i = 0;i<36;i++)
 		    // 	std::cout<<covariance[i]<<"  ";

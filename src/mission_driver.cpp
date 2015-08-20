@@ -16,13 +16,13 @@ int main()
 	// double delta_omega = 0.17;
 	// double spin_angle = atof(argv[2]);
 
-	amcl_decipher = a.AMCL_run(0.1, 0);
+	amcl_decipher = a.AMCL_run(0, -6.28);
 	cout<<amcl_decipher[0]<<"  "<<amcl_decipher[1]<<endl;
 
 	amcl_decipher = a.AMCL_run(0.2, 0);
 	cout<<amcl_decipher[0]<<"  "<<amcl_decipher[1]<<endl;
 
-	amcl_decipher = a.AMCL_run(0.1, 0);
+	amcl_decipher = a.AMCL_run(0, 3.14);
 	cout<<amcl_decipher[0]<<"  "<<amcl_decipher[1]<<endl;
 
 	return 0;
