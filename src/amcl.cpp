@@ -153,6 +153,7 @@ int main(int argc, char **argv)
 
         offset_point.header.frame_id = "odom";
 
+        // !! offset now is hard-coded
         offset_point.point.x = 17.0;
         offset_point.point.y = 17.0;
         offset_point.point.z = 0.0;
