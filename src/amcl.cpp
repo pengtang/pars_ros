@@ -24,7 +24,7 @@
 int tf_msg_count = 0;
 double distance_traveled = 0;
 double angle_spinned = 99999999;
-double EPISILON_DISTANCE = 0.05;
+double EPISILON_DISTANCE = 0.004;
 double EPISILON_ANGLE = 0.03;
 double travel_distance;
 
@@ -45,6 +45,7 @@ void speedMessageReceived(const geometry_msgs::Twist &msg)
 void amclMessageReceived(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
     amcl_pose = msg;
+    std::cerr<<"AMCL pose:  "<<amcl_pose.pose.pose.position.x<<"  "<<amcl_pose.pose.pose.position.y<<std::endl;
     // if (amcl_msg_count == 0)
     // {
     //   amcl_initial = msg;
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
 //  double v = atof(argv[2]); // DOES NOT APPLY FOR NOW, PLEASE MAKE THIS RELATIVELY SMALL COMPARED TO s
 
   // Set parameters
-  double v = 0.02;
+  double v = 0.04;
   double s = atof(argv[1]);
   
   travel_distance = s;
@@ -117,11 +118,12 @@ int main(int argc, char **argv)
   bool movement_spin = not movement_forward;
 
 // ???
-  double CLOCK_SPEED = 0.05;
+  double CLOCK_SPEED = 0.1;
   ros::Rate rate(1/CLOCK_SPEED);
   tf::TransformListener listener(ros::Duration(1/CLOCK_SPEED));
 
   geometry_msgs::PointStamped offset_point;
+  offset_point.header.frame_id = "odom";
   geometry_msgs::PointStamped tf_initial;
   geometry_msgs::PointStamped base_point;
 
@@ -144,14 +146,10 @@ int main(int argc, char **argv)
   else if (movement_forward)
     while(ros::ok() && std::abs(distance_traveled - s)>EPISILON_DISTANCE )
     {
-        msg.linear.x = BASE_LINEAR_SPEED;
-        pub.publish(msg);
         // ROS_INFO_STREAM("The robot is now moving forward!");
-        std::cerr<<"distance_traveled is "<< distance_traveled << " s is "<< s <<"   "<<std::endl;
-        std::cerr<<"distance to goal abs(distance_traveled - s) is "<< std::abs(distance_traveled - s) << std::endl;
+        // std::cerr<<"distance_traveled is "<< distance_traveled << " s is "<< s <<"   "<<std::endl;
+        // std::cerr<<"distance to goal abs(distance_traveled - s) is "<< std::abs(distance_traveled - s) << std::endl;
         //count++;
-
-        offset_point.header.frame_id = "odom";
 
         // !! offset now is hard-coded
         offset_point.point.x = 17.0;
@@ -161,20 +159,23 @@ int main(int argc, char **argv)
         try{
           listener.transformPoint("map", offset_point, base_point);
 
-          if (tf_msg_count != 0)
-            std::cerr<<"initial pos: "<<tf_initial.point.x<<"  "<< tf_initial.point.y<<std::endl;
-          std::cerr<<"current pos: "<<base_point.point.x<<"  "<< base_point.point.y<<std::endl;
-
-          if (tf_msg_count == 0 && base_point.point.x!=0)
+          if (tf_msg_count == 0 && base_point.point.y!=0 && base_point.point.y!=2)
           {
               tf_initial.point.x = base_point.point.x;
               tf_initial.point.y = base_point.point.y;
               tf_msg_count++;
+              msg.linear.x = BASE_LINEAR_SPEED;
+              pub.publish(msg);                                     
           }
           distance_traveled = sqrt( pow((base_point.point.x - tf_initial.point.x),2) + pow((base_point.point.y - tf_initial.point.y),2) );
+        
+          if (tf_msg_count != 0)
+            std::cerr<<"initial pos: "<<tf_initial.point.x<<"  "<< tf_initial.point.y<<std::endl;
+          std::cerr<<"current pos: "<<base_point.point.x<<"  "<< base_point.point.y<<std::endl;
+          std::cerr<<"distance left to go(or overshoot) is "<<std::abs(distance_traveled - s)<<std::endl;         
         }
         catch(tf::TransformException& ex){
-          if (tf_msg_count == 0 && base_point.point.x!=0)
+          if (tf_msg_count == 0 && base_point.point.x!=0 && base_point.point.y!=2)
           {
               tf_initial.point.x = base_point.point.x;
               tf_initial.point.y = base_point.point.y;
