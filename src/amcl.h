@@ -96,7 +96,7 @@ public:
 		std::string temp_str = "rosrun pars_ros amcl " + to_string(s) + ' ' +  to_string(spin_angle);
 
 		int total_steps, status;
-		double v = 0.05;
+		double v = 0.02;
 		double delta_omega = 0.17;
 		double delta_t = 1;
 

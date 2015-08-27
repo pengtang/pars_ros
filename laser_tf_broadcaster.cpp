@@ -49,7 +49,7 @@ int main(int argc, char** argv){
 
 		broadcaster.sendTransform(
 			tf::StampedTransform(
-				tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(-15,-15,0)),
+				tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(-5,-5,0)),
 				ros::Time::now(),"map", "odom"));
 		
 		/***************************** end stdr ********************************/
